@@ -529,7 +529,7 @@ public class Distribution extends ModuleRoot {
     }
 
     public static boolean showCurrentDistribution() {
-        return !(Framework.isBooleanPropertyTrue(ApiBrowserConstants.PROPERTY_SITE_MODE) || isSiteMode());
+        return !(Framework.isBooleanPropertyTrue(ApiBrowserConstants.PROPERTY_HIDE_CURRENT_DISTRIBUTION) || isSiteMode());
     }
 
     public static boolean isSiteMode() {
