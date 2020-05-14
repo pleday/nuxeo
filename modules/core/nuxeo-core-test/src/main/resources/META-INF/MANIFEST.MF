@@ -30,3 +30,4 @@ Import-Package: com.google.inject,
  org.nuxeo.ecm.core.work,
  org.nuxeo.runtime
 Require-Bundle: org.nuxeo.ecm.core
+Nuxeo-Component: OSGI-INF/dummy-migration.xml

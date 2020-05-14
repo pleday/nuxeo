@@ -26,14 +26,17 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -527,6 +530,43 @@ public class MigrationServiceImpl extends DefaultComponent implements MigrationS
         }
         String currentLock = kv.getString(id + LOCK);
         throw new RuntimeException("Cannot lock for write migration: " + id + ", already locked: " + currentLock);
+    }
+
+    @Override
+    public Migration getMigration(String id) {
+        MigrationDescriptor descriptor = getDescriptor(XP_CONFIG, id);
+        return new Migration(id, descriptor.getDescription(), descriptor.getDescriptionLabel(), getStatus(id),
+                descriptor.getSteps());
+    }
+
+    @Override
+    public List<Migration> getMigrations() {
+        var descriptors = getDescriptors(XP_CONFIG);
+        return descriptors.stream().map(d -> getMigration(d.getId())).collect(Collectors.toList());
+    }
+
+    @Override
+    public void run(String migrationId) {
+        if(getStatus(migrationId) == null) {
+            probeAndSetState(migrationId);
+        }
+        MigrationDescriptor descriptor = getDescriptor(XP_CONFIG, migrationId);
+        Set<MigrationStepDescriptor> availableSteps = getAvailableSteps(descriptor);
+        if(availableSteps.size() != 1) {
+            throw new IllegalStateException(String.format("Migration %s needs to have exactly one step to run", migrationId));
+        } else {
+            runStep(migrationId, availableSteps.iterator().next().getId());
+        }
+    }
+
+    protected Set<MigrationStepDescriptor> getAvailableSteps(MigrationDescriptor descriptor) {
+        MigrationStatus status = getStatus(descriptor.getId());
+        return descriptor.getSteps()
+                         .entrySet()
+                         .stream()
+                         .filter(e -> e.getValue().getFromState().equals(status.getState()))
+                         .map(Entry::getValue)
+                         .collect(Collectors.toSet());
     }
 
 }

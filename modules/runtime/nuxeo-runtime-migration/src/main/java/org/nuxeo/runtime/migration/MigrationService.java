@@ -18,6 +18,8 @@
  */
 package org.nuxeo.runtime.migration;
 
+import java.util.List;
+
 /**
  * Migration Service.
  *
@@ -233,5 +235,21 @@ public interface MigrationService {
      * @param step the step id
      */
     void runStep(String id, String step);
+
+    /**
+     * @since 11.1
+     */
+    Migration getMigration(String id);
+
+    /**
+     * @since 11.1
+     */
+    List<Migration> getMigrations();
+
+    /**
+     * @throws IllegalStateException if the migration doesn't have exactly one available step to run.
+     * @since 11.1
+     */
+    void run(String migrationId) throws IllegalArgumentException;
 
 }
