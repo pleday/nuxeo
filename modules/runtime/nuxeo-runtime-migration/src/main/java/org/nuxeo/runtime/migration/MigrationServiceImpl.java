@@ -23,6 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -567,6 +568,20 @@ public class MigrationServiceImpl extends DefaultComponent implements MigrationS
                          .filter(e -> e.getValue().getFromState().equals(status.getState()))
                          .map(Entry::getValue)
                          .collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean await(Duration duration) throws InterruptedException {
+        long deadline = System.nanoTime() + duration.toNanos();
+        for (;;) {
+            if (executor.getActiveCount() == 0) {
+                return true;
+            }
+            Thread.sleep(100);
+            if (deadline < System.nanoTime()) {
+                return false;
+            }
+        }
     }
 
 }

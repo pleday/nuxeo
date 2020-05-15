@@ -18,9 +18,14 @@
  */
 package org.nuxeo.ecm.core.migration.test;
 
+import java.util.List;
+
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.migrator.AbstractRepositoryMigrator;
+import org.nuxeo.ecm.core.repository.RepositoryService;
+import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.migration.MigrationService.MigrationContext;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 
 /**
  * @since 11.1
@@ -31,6 +36,8 @@ public class DummyMigrator extends AbstractRepositoryMigrator {
 
     @Override
     public void run(String step, MigrationContext migrationContext) {
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
         state = "after";
     }
 

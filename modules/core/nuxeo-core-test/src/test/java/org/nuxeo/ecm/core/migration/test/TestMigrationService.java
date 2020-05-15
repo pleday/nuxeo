@@ -32,13 +32,17 @@ import org.nuxeo.runtime.migration.Migration;
 import org.nuxeo.runtime.migration.MigrationService;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.nuxeo.runtime.test.runner.TransactionalFeature;
 
 /**
  * @since 11.1
  */
 @RunWith(FeaturesRunner.class)
-@Features({ CoreFeature.class, MigrationFeature.class })
+@Features({ CoreFeature.class, MigrationFeature.class, TransactionalFeature.class })
 public class TestMigrationService {
+
+    @Inject
+    protected TransactionalFeature txFeature;
 
     @Inject
     protected MigrationService migrationService;
@@ -61,11 +65,11 @@ public class TestMigrationService {
 
     }
     @Test
-    public void testRunMigration() throws InterruptedException {
+    public void testRunMigration() {
         String dummy = "dummy-migration";
         assertEquals("before", migrationService.getMigration(dummy).getStatus().getState());
         migrationService.run(dummy);
-        Thread.sleep(1000);
+        txFeature.nextTransaction();
         assertEquals("after", migrationService.getMigration(dummy).getStatus().getState());
         try {
             migrationService.run(dummy);

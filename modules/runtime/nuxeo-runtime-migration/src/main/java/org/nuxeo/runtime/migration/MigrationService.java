@@ -18,6 +18,7 @@
  */
 package org.nuxeo.runtime.migration;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -251,5 +252,13 @@ public interface MigrationService {
      * @since 11.1
      */
     void run(String migrationId) throws IllegalArgumentException;
+
+    /**
+     * Waits for completion of all migration steps.
+     *
+     * @return {@code true} if the migration executor has no more threads running {@code false} otherwise
+     * @since 11.1
+     */
+    boolean await(Duration duration) throws InterruptedException;
 
 }

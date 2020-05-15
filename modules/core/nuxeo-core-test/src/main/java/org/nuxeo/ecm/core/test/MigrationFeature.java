@@ -34,9 +34,12 @@ import java.util.stream.Stream;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.kv.KeyValueService;
 import org.nuxeo.runtime.kv.KeyValueStore;
+import org.nuxeo.runtime.migration.MigrationService;
 import org.nuxeo.runtime.test.runner.Deploy;
+import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.nuxeo.runtime.test.runner.RunnerFeature;
+import org.nuxeo.runtime.test.runner.TransactionalFeature;
 
 /**
  * Feature for migration service.
@@ -45,6 +48,7 @@ import org.nuxeo.runtime.test.runner.RunnerFeature;
  */
 @Deploy("org.nuxeo.runtime.kv")
 @Deploy("org.nuxeo.runtime.migration")
+@Features({ TransactionalFeature.class })
 public class MigrationFeature implements RunnerFeature {
 
     protected static final String[] KEYS = { STEP, START_TIME, PING_TIME, PROGRESS_MESSAGE, PROGRESS_NUM,
@@ -78,6 +82,12 @@ public class MigrationFeature implements RunnerFeature {
         KeyValueService service = Framework.getService(KeyValueService.class);
         Objects.requireNonNull(service, "Missing KeyValueService");
         return service.getKeyValueStore(KEYVALUE_STORE_NAME);
+    }
+
+    @Override
+    public void initialize(FeaturesRunner runner) throws Exception {
+        runner.getFeature(TransactionalFeature.class)
+              .addWaiter(duration -> Framework.getService(MigrationService.class).await(duration));
     }
 
 }
