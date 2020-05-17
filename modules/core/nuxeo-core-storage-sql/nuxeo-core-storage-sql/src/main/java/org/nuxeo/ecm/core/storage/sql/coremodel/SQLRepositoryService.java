@@ -18,7 +18,6 @@
  */
 package org.nuxeo.ecm.core.storage.sql.coremodel;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +44,6 @@ import org.nuxeo.runtime.model.SimpleContributionRegistry;
 public class SQLRepositoryService extends DefaultComponent {
 
     private static final String XP_REPOSITORY = "repository";
-
-    protected static final String CONNECTIONFACTORYIMPL_CLASS = "org.nuxeo.ecm.core.storage.sql.ra.ConnectionFactoryImpl";
 
     protected RepositoryDescriptorRegistry registry = new RepositoryDescriptorRegistry();
 
@@ -178,23 +175,7 @@ public class SQLRepositoryService extends DefaultComponent {
     }
 
     public RepositoryImpl getRepositoryImpl(String repositoryName) {
-        RepositoryManagement repository = getRepository(repositoryName);
-        if (repository instanceof RepositoryImpl) {
-            return (RepositoryImpl) repository;
-        }
-        if (!CONNECTIONFACTORYIMPL_CLASS.equals(repository.getClass().getName())) {
-            throw new RuntimeException("Unknown repository class: " + repository.getClass());
-        }
-        try {
-            Field f1 = repository.getClass().getDeclaredField("managedConnectionFactory");
-            f1.setAccessible(true);
-            Object factory = f1.get(repository);
-            Field f2 = factory.getClass().getDeclaredField("repository");
-            f2.setAccessible(true);
-            return (RepositoryImpl) f2.get(factory);
-        } catch (SecurityException | NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        return (RepositoryImpl) getRepository(repositoryName);
     }
 
     /**
